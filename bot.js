@@ -86,8 +86,6 @@ discordClient.on('interactionCreate', async interaction => {
             valueToDisplay = "this dungeon is full.";
         } else if (newValue == 1) {
             dbHandler.createDungeonParty();
-
-
             var rolename = "dungeon-party-" +
                 interaction.member.guild.roles.create({
                     name: rolename,
@@ -147,7 +145,7 @@ discordClient.on('interactionCreate', async interaction => {
 discordClient.on('messageCreate', async interaction => {
     if (interaction.author.bot) return;
     var commandName = interaction.content;
-    if (commandName.includes(prefix)) {
+    if (commandName.startsWith(prefix)) {
         dbHandler.userExists(interaction.author.id, function (user) {
             if (typeof (user) != 'undefined') {
                 if (commandName.startsWith(prefix + 'help')) {
