@@ -17,11 +17,14 @@ module.exports = {
     userExists,
     getUserBalance,
     addNewUser,
-    getUserItems
+    getUserItems,
+    getItem,
+    getAllClasses,
+    getClassById
 };
 
 function initializeConnection(config) {
-    return mysql.createPool(config); 
+    return mysql.createPool(config);
 }
 
 async function getRow(sql, whereArray, callback) {
@@ -41,7 +44,7 @@ async function getRow(sql, whereArray, callback) {
  * @param {*} discordId 
  */
 async function userExists(discordId, callback) {
-    var sql = "SELECT * FROM `users` WHERE `discord_id` = ?";
+    var sql = "SELECT `id` FROM `users` WHERE `discord_id` = ?";
     getRow(sql, [discordId], function (err, data) {
         if (err) {
             console.log("ERROR : ", err);
@@ -66,6 +69,29 @@ async function getUserBalance(discordId, callback) {
     });
 }
 
+async function getClassById(classId, callback) {
+    var sql = 'SELECT `id`, `name`, `description` FROM `classes` WHERE `id` = ?';
+    con.query(sql, [classId], function (error, results, fields) {
+        if (error) {
+            console.log("ERROR : ", error);
+            callback(false)
+        }
+        return callback(results[0])
+    });
+}
+
+async function getAllClasses(callback) {
+    var sql = 'SELECT `id`, `name` FROM `classes`';
+    con.query(sql, [], function (error, results, fields) {
+        if (error) {
+            console.log("ERROR : ", error);
+            callback(false)
+        }
+        // Neat!
+        return callback(results)
+    });
+}
+
 async function addNewUser(discordId, callback) {
     var sql = 'INSERT INTO `users` SET discord_id = ?';
     var items = [discordId];
@@ -79,6 +105,69 @@ async function addNewUser(discordId, callback) {
     });
 }
 
+async function createDugeon() {
+    var sql = 'INSERT INTO `users` SET discord_id = ?';
+    var items = [discordId];
+    con.query(sql, items, function (error, results, fields) {
+        if (error) {
+            console.log("ERROR : ", error);
+            callback(false)
+        }
+        // Neat!
+        return callback(results)
+    });
+}
+
+
+async function createParty(discordId, callback) {
+    checkIfPartyExists(partyId, function(partyItem) {
+        if(typeof partyItem != 'undefined') {
+
+        }
+    });
+}
+
+/**
+ * 
+ * @param {*} length 
+ * @returns 
+ */
+ function makeId(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
+
+async function checkIfPartyExists(callback) {
+    // var partyId =; 
+    var sql = 'SELECT `id` FROM `player_party` WHERE `party_id` = ?';
+    var items = [ makeId(20)];
+    con.query(sql, items, function (error, results, fields) {
+        if (error) {
+            console.log("ERROR : ", error);
+            callback(false)
+        }
+        return callback(results[0]);
+    });
+}
+
+
+async function getItem(itemName, callback) {
+    var sql = 'SELECT `name`, `rarity`, `cost` FROM `items` WHERE `name` LIKE ? ';
+    var items = [itemName];
+    con.query(sql, items, function (error, results, fields) {
+        if (error) {
+            console.log("ERROR : ", error);
+            callback(false)
+        }
+        return callback(results[0]);
+    });
+}
 
 async function getUserItems(discordId, callback) {
     var sql = 'SELECT u.id, `i`.`name`, `i`.`rarity` FROM `users` AS `u` ' +
@@ -106,18 +195,18 @@ async function getUserItems2(discordId, callback) {
             console.log("ERROR : ", error);
             callback(false)
         }
-        if(typeof results != 'undefined') {
-            var sqlSecond = "SELECT `rarity`, `name` FROM `items` WHERE `id` = ?"; 
-            con.query(sqlSecond,  [results[0].id], function (errorsSecond, otherResult, fieldsSecond) {
+        if (typeof results != 'undefined') {
+            var sqlSecond = "SELECT `rarity`, `name` FROM `items` WHERE `id` = ?";
+            con.query(sqlSecond, [results[0].id], function (errorsSecond, otherResult, fieldsSecond) {
                 if (error) {
                     console.log("ERROR : ", errorsSecond);
                     callback(false)
                 }
                 console.log(otherResult)
                 // Neat!
-                return 
+                return
             });
-        } 
+        }
     });
 }
 
