@@ -28,36 +28,29 @@ var rarityTypes = {
     0: ['Common', '#8A8887'],
     1: ['Uncommon', '#2BB126'],
     2: ['Rare', '#3997D1'],
-    3: ['', '']
+    3: ['Epic', '#3997D1'],
+    4: ['Legendary', '#3997D1'],
+    5: ['Mythical', '#3997D1']
+}
+
+var classTypes = {
+    1: ['Ranged dps'],
+    2: ['Close combat dps'],
+    3: ['Healer'],
+    4: ['Tank']
 }
 
 discordClient.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-const commands = [];
+// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+// const commands = [];
 
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    commands.push(command.data.toJSON());
-    discordClient.commands.set(command.data.name, command);
-}
-
-rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, '904771032571871242'), { body: commands })
-    .then(() => console.log('Successfully registered application commands.'))
-    .catch(console.error);
-
+//todo add commands.
+// for (const file of commandFiles) {
+//     const command = require(`./commands/${file}`);
+//     commands.push(command.data.toJSON());
+// }
 
 discordClient.on('interactionCreate', async interaction => {
-    if (interaction.isCommand()) {
-        const command = discordClient.commands.get(interaction.commandName);
-        if (!command) return;
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-    }
-
     if (interaction.isSelectMenu()) {
         if (interaction.customId === 'classes') {
             dbHandler.getClassById(interaction.values[0], function (item) {
@@ -146,6 +139,9 @@ discordClient.on('messageCreate', async interaction => {
     if (interaction.author.bot) return;
     var commandName = interaction.content;
     if (commandName.startsWith(prefix)) {
+        
+
+
         dbHandler.userExists(interaction.author.id, function (user) {
             if (typeof (user) != 'undefined') {
                 if (commandName.startsWith(prefix + 'help')) {
