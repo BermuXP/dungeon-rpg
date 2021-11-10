@@ -158,8 +158,8 @@ async function checkIfPartyExists(callback) {
 
 
 async function getItem(itemName, callback) {
-    var sql = 'SELECT `name`, `rarity`, `cost` FROM `items` WHERE `name` LIKE ? ';
-    var items = [itemName];
+    var sql = 'SELECT `name`, `rarity`, `description`, `image_url` FROM `items` WHERE `name` LIKE ? LIMIT 1';
+    var items = [ "%" + itemName + "%"];
     con.query(sql, items, function (error, results, fields) {
         if (error) {
             console.log("ERROR : ", error);

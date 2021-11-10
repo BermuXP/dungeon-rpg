@@ -19,19 +19,38 @@ const discordClient = new Discord.Client({
 var prefix = "!";
 var currencyPrefix = "credits";
 
+var rarityTypes = {
+    0: ['Common', '#9d9d9d'],
+    1: ['Uncommon', '#1eff00'],
+    2: ['Rare', '#0070dd'],
+    3: ['Epic', '#a335ee'],
+    4: ['Legendary', '#ff8000'],
+    5: ['Mythical', '#e6cc80'] 
+}
+
+exports.prefix = prefix;
+exports.rarityTypes = rarityTypes;
+
+
+
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commands = [];
+
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    console.log(command.data);
+    commands[command.data.name] = command.data;
+}
 
 discordClient.on('ready', () => {
+    commands.forEach(function (element) {
+        console.log(element);
+    });
+
     console.log(`Logged in as ${discordClient.user.tag}!`);
 });
 
-var rarityTypes = {
-    0: ['Common', '#8A8887'],
-    1: ['Uncommon', '#2BB126'],
-    2: ['Rare', '#3997D1'],
-    3: ['Epic', '#3997D1'],
-    4: ['Legendary', '#3997D1'],
-    5: ['Mythical', '#3997D1']
-}
+
 
 var classTypes = {
     1: ['Ranged dps'],
@@ -40,15 +59,11 @@ var classTypes = {
     4: ['Tank']
 }
 
-discordClient.commands = new Discord.Collection();
-// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-// const commands = [];
+// discordClient.commands = new Discord.Collection();
+
 
 //todo add commands.
-// for (const file of commandFiles) {
-//     const command = require(`./commands/${file}`);
-//     commands.push(command.data.toJSON());
-// }
+
 
 discordClient.on('interactionCreate', async interaction => {
     if (interaction.isSelectMenu()) {
@@ -135,125 +150,26 @@ discordClient.on('interactionCreate', async interaction => {
     }
 });
 
+
 discordClient.on('messageCreate', async interaction => {
     if (interaction.author.bot) return;
     var commandName = interaction.content;
+    var firstCommand = commandName.split(' ')[0];
+
     if (commandName.startsWith(prefix)) {
-        
-
-
         dbHandler.userExists(interaction.author.id, function (user) {
-            if (typeof (user) != 'undefined') {
-                if (commandName.startsWith(prefix + 'help')) {
-
-                } else if (commandName.startsWith(prefix + 'profile')) {
-                    discEmbed = new Discord.MessageEmbed()
-                        .setTitle(interaction.author.username)
-                        .setThumbnail(interaction.author.avatarURL())
-                        .setColor('#0x1254d9');
-                    interaction.channel.send({ embeds: [discEmbed] });
-                } else if (commandName.startsWith(prefix + 'balance')) {
-                    dbHandler.getUserBalance(interaction.author.id, function (balance) {
-                        interaction.channel.send('Your balance is: ' + balance + " " + currencyPrefix);
-                    });
-                } else if (commandName.startsWith(prefix + 'register')) {
-                    interaction.channel.send("You're already registered.");
-                } else if (commandName.startsWith(prefix + 'myitems')) {
-                    dbHandler.getUserItems(interaction.author.id, function (returnItems) {
-                        console.log(returnItems);
-                        if (typeof returnItems != 'undefined' && returnItems !== false && returnItems.length > 0) {
-                            console.log(returnItems);
-                            discEmbed = new Discord.MessageEmbed()
-                                .setTitle(interaction.author.username + "'s items")
-                                .setThumbnail(interaction.author.avatarURL())
-                                .setColor('#0x1254d9');
-                            if (returnItems.length == 1 && element[0].name === null) {
-                                interaction.channel.send("You have no items.");
-                            }
-                            returnItems.forEach(function (element) {
-                                if (element.name != null) {
-                                    discEmbed.addField(element.name, rarityTypes[element.rarity][0]);
-                                }
-                            });
-                            interaction.channel.send({ embeds: [discEmbed] });
-                        } else {
-                            interaction.channel.send("You have no items.");
-                        }
-                    });
-                } else if (commandName.startsWith(prefix + 'item')) {
-                    var splitted = commandName.split(' ');
-                    dbHandler.getItem(splitted[1], function (result) {
-                        console.log(result)
-                        if (typeof result != 'undefined') {
-                            interaction.channel.send(result.name + " | rarity: " + rarityTypes[result.rarity][0] + " | " + result.description);
-                        }
-                    });
-                } else if (commandName.startsWith(prefix + 'party')) {
-                    var splitted = commandName.split(' ');
-                    if (splitted[1] == 'invite') {
-
-                    } else if (splitted[1] == 'create') {
-                        interaction.channel.send("Successfully created a party.");
-                        var id = makeId(50);
-                    }
-                } else if (commandName.startsWith(prefix + 'classes')) {
-                    dbHandler.getAllClasses(function (classes) {
-                        if (typeof classes != 'undefined') {
-                            var options = classesToOptions(classes);
-                            console.log(options);
-                            const row = new Discord.MessageActionRow()
-                                .addComponents(
-                                    new Discord.MessageSelectMenu()
-                                        .setCustomId('classes')
-                                        .setPlaceholder('Nothing selected')
-                                        .addOptions(options),
-                                );
-                            interaction.channel.send({ components: [row] });
-                        } else {
-                            interaction.channel.send('There is currently no classes available');
-                        }
-                    });
-                } else if (commandName.startsWith(prefix + 'dungeon')) {
-                    var discEmbed = new Discord.MessageEmbed()
-                        .setColor('#35AB30')
-                        .setTitle('Dungeon')
-                        .setDescription('A random dungeon appeared')
-                        .setThumbnail('https://cdn-icons-png.flaticon.com/512/2014/2014191.png')
-                        .addField("Joined", "0/5");
-                    const row = new Discord.MessageActionRow()
-                        .addComponents(
-                            new Discord.MessageButton()
-                                .setCustomId('join-dungeon')
-                                .setLabel('Join')
-                                .setStyle('SUCCESS')
-                        );
-                    interaction.channel.send({ components: [row], embeds: [discEmbed] });
+            console.log(firstCommand);
+            var firstCommandWihtoutPrefix = firstCommand.replace(prefix, "");
+            if (typeof commands[firstCommandWihtoutPrefix] != 'undefined') {
+                if (typeof (user) == 'undefined') {
+                    user = false;
                 }
-            } else if (commandName.startsWith(prefix + 'register')) {
-                console.log("test");
-                dbHandler.addNewUser(interaction.author.id, function (data) {
-                    console.log(data);
-                    if (data !== false) {
-                        const row = new Discord.MessageActionRow()
-                            .addComponents(
-                                new Discord.MessageButton()
-                                    .setCustomId('create-character')
-                                    .setLabel('Create character')
-                                    .setStyle('SUCCESS')
-                            );
-                        interaction.channel.send({ content: "Successfully registered, would you like to create a character?", components: [row] });
-                    } else {
-                        interaction.channel.send("Something went wrong while adding you to our system, please try again later or contact one of the develoeprs.");
-                    }
-
-                });
-            } else {
-                interaction.channel.send("You don't have a user yet, to use this bots commands use /register to register yourself!");
+                var commandData = commands[firstCommandWihtoutPrefix];
+                commandData.command(interaction, user); 
             }
         });
     }
 });
-
 
 function classesToOptions(classes) {
     var returnItem = [];
@@ -266,19 +182,6 @@ function classesToOptions(classes) {
     return returnItem;
 }
 
-function createParty() {
-
-}
-
-
-function joinParty() {
-
-}
-
-
-function createDungeon() {
-
-}
 /**
  * 
  * @param {*} data 
