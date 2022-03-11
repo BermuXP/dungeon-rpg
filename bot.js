@@ -2,10 +2,6 @@ const fs = require('fs');
 var dbHandler = require('./dbhandler.js');
 require('dotenv').config(); //initialize dotenv
 const Discord = require('discord.js'); //import discord.js
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-
-const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
 
 const discordClient = new Discord.Client({
     intents: [
@@ -25,13 +21,11 @@ var rarityTypes = {
     2: ['Rare', '#0070dd'],
     3: ['Epic', '#a335ee'],
     4: ['Legendary', '#ff8000'],
-    5: ['Mythical', '#e6cc80'] 
+    5: ['Mythical', '#e6cc80']
 }
 
 exports.prefix = prefix;
 exports.rarityTypes = rarityTypes;
-
-
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const commands = [];
@@ -43,14 +37,8 @@ for (const file of commandFiles) {
 }
 
 discordClient.on('ready', () => {
-    commands.forEach(function (element) {
-        console.log(element);
-    });
-
     console.log(`Logged in as ${discordClient.user.tag}!`);
 });
-
-
 
 var classTypes = {
     1: ['Ranged dps'],
@@ -150,7 +138,6 @@ discordClient.on('interactionCreate', async interaction => {
     }
 });
 
-
 discordClient.on('messageCreate', async interaction => {
     if (interaction.author.bot) return;
     var commandName = interaction.content;
@@ -165,11 +152,12 @@ discordClient.on('messageCreate', async interaction => {
                     user = false;
                 }
                 var commandData = commands[firstCommandWihtoutPrefix];
-                commandData.command(interaction, user); 
+                commandData.command(interaction, user);
             }
         });
     }
 });
+
 
 function classesToOptions(classes) {
     var returnItem = [];

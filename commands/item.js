@@ -2,8 +2,6 @@ const { MessageEmbed } = require('discord.js'); //import discord.js
 var dbHandler = require('../dbhandler.js');
 var { prefix, rarityTypes } = require('../bot.js');
 
-
-
 module.exports = {
     data: {
         name: 'item',
@@ -17,10 +15,8 @@ module.exports = {
 
             dbHandler.getItem(itemName, function (returnItem) {
                 if (typeof returnItem != 'undefined') {
-                    console.log(returnItem.rarity); 
-                    console.log(rarityTypes[returnItem.rarity][1]);
                     var discEmbed = new MessageEmbed()
-                        .setColor(rarityTypes[returnItem.rarity][1])
+                        .setColor(rarityTypes[returnItem.rarity][1]) 
                         .setTitle(returnItem.name)
                         .setDescription(returnItem.description)
                         .setThumbnail("https://bermu.tv/public/img/" + returnItem.image_url)

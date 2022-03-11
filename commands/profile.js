@@ -4,7 +4,7 @@ module.exports = {
     data: {
         name: 'profile',
         command: function (interaction, user) {
-            discEmbed = new MessageEmbed()
+            var discEmbed = new MessageEmbed()
                 .setTitle(interaction.author.username)
                 .setThumbnail(interaction.author.avatarURL())
                 .setColor('#0x1254d9');

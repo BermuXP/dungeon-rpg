@@ -105,6 +105,7 @@ async function addNewUser(discordId, callback) {
     });
 }
 
+
 async function createDugeon() {
     var sql = 'INSERT INTO `users` SET discord_id = ?';
     var items = [discordId];
